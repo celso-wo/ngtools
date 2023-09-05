@@ -27,9 +27,14 @@
           <input id="pdfs" type="file" multiple class="form-control"/>  
         </div>
       </div>
-        <hr class="my-4">
-        <button class="w-100 btn btn-primary btn-lg" onclick="mix()">Mix</button>
-      </div>
+      <hr class="my-4">
+      <div class="row">
+        <div class="col-6">
+          <button class="w-100 btn btn-primary btn-lg" onclick="mix()">Mix</button>
+        </div>
+        <div class="col-6">
+          <button class="w-100 btn btn-primary btn-lg" onclick="download()">Download</button>
+        </div>
     </div>
     
     <iframe id="pdf" style="width: 100%; height: 100%;margin-top:10px;"></iframe>
@@ -38,7 +43,7 @@
     <script src="https://unpkg.com/pdf-lib"></script>
 
     <script>
-      async function mix() {
+      async function generatePDF() {
         const pdfsInput = document.getElementById('pdfs');
         
         const pdfResult = await PDFLib.PDFDocument.create();
@@ -50,6 +55,8 @@
         }
 
         for (let i = 0; i < pdfSources[0].getPageCount(); i++) {
+          console.log(`page ${i}`);
+
           for (const pdfSource of pdfSources) {
             const [copiedPage] = await pdfResult.copyPages(pdfSource, [i]);
 
@@ -57,8 +64,18 @@
           }
         }
 
-        const pdfDataUri = await pdfResult.saveAsBase64({ dataUri: true });
-        document.getElementById('pdf').src = pdfDataUri;
+        return await pdfResult.saveAsBase64({ dataUri: true });
+      }
+
+      async function mix() {
+        document.getElementById('pdf').src = await generatePDF(); 
+      }
+
+      async function download() {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = await generatePDF();
+        downloadLink.download = 'generated.pdf';
+        downloadLink.click();
       }
     </script>
   </body>
